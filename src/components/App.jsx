@@ -1,16 +1,21 @@
-export const App = () => {
+import ContactForm from 'components/ContactForm';
+import Filter from 'components/Filter';
+import ContactList from 'components/ContactList';
+import { useGetContactsQuery } from 'redux/contactsSlice';
+
+const App = () => {
+  const { data: contacts } = useGetContactsQuery();
+  const contactsExist = contacts?.length > 0;
+
   return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
-    </div>
+    <>
+      <h1>Phonebook</h1>
+      <ContactForm />
+      {contactsExist && <h2>Contacts</h2>}
+      {contactsExist && <Filter />}
+      <ContactList />
+    </>
   );
 };
+
+export default App;

@@ -1,0 +1,14 @@
+.contactList {
+  padding: 0;
+}
+
+.contactList li {
+  display: flex;
+  justify-content: space-between;
+
+  margin: 12px auto;
+}
+
+.contactList button {
+  margin: 0;
+}
