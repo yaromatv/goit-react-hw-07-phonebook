@@ -1,30 +1,27 @@
-import {
-  useGetContactsQuery,
-  useAddContactMutation,
-} from 'redux/contactsSlice';
-
+import { useDispatch, useSelector } from 'react-redux';
 import css from 'components/ContactForm/ContactForm.module.css';
 
-const ContactForm = () => {
-  const { data: contacts } = useGetContactsQuery();
-  // const { data: contacts, error, isLoading } = useGetContactsQuery();
+import { addContact } from 'redux/contactsSlice';
 
-  const [addContact, { isLoading: addIsLoading }] = useAddContactMutation();
-  //  const [addContact, addResult] = useAddContactMutation();
-  // const { isError: addError, isLoading: addLoading, isSuccess: addisSuccess } = addResult;
+const ContactForm = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.contacts.data);
+  const isAddContactLoading = useSelector(state => state.contacts.loading);
 
   const handleSubmit = async e => {
     e.preventDefault();
     const form = e.target;
-    const name = form.elements.name.value;
+    const name = form.elements.name.value.trim();
     const number = form.elements.number.value;
 
     const existingContact = contacts.find(
-      contact => contact.name === name || contact.number === number
+      contact =>
+        contact.name.toLowerCase() === name.toLowerCase() ||
+        contact.number === number
     );
 
     if (existingContact) {
-      if (existingContact.name === name) {
+      if (existingContact.name.toLowerCase() === name.toLowerCase()) {
         window.alert(`${existingContact.name} is already in contacts`);
       }
 
@@ -36,10 +33,11 @@ const ContactForm = () => {
     }
 
     try {
-      await addContact({ name, number });
+      await dispatch(addContact({ name, number }));
       form.reset();
     } catch (error) {
       console.error('Error adding contact:', error);
+      window.alert('Error adding contact. Please try again.');
     }
   };
 
@@ -66,7 +64,7 @@ const ContactForm = () => {
           required
         />
       </label>
-      <button disabled={addIsLoading} type="submit">
+      <button disabled={isAddContactLoading} type="submit">
         Add contact
       </button>
     </form>

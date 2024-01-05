@@ -1,21 +1,25 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
 import css from 'components/ContactList/ContactList.module.css';
-import { useGetContactsQuery } from 'redux/contactsSlice';
+import { fetchContacts } from 'redux/contactsSlice';
 import ContactItem from 'components/ContactItem';
 
 const ContactList = () => {
-  const { data: contacts } = useGetContactsQuery();
-  // const { data: contacts, error, isLoading } = useGetContactsQuery();
-
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.contacts.data);
   const filter = useSelector(state => state.filter);
   const normalizedFilter = filter.toLowerCase();
+
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
+
   const filteredContacts =
     contacts?.length > 0
       ? contacts.filter(contact =>
           contact.name.toLowerCase().includes(normalizedFilter)
         )
-      : contacts;
-  // console.log(filteredContacts);
+      : [];
 
   return (
     <ul className={css.contactList}>

@@ -1,40 +1,65 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-export const contactsApi = createApi({
-  reducerPath: 'contactsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: 'https://65131d468e505cebc2e99914.mockapi.io',
-  }),
-  tagTypes: ['Contact'],
-  endpoints: builder => ({
-    getContacts: builder.query({
-      query: () => `/contacts`,
-      providesTags: ['Contact'],
-    }),
-    addContact: builder.mutation({
-      query: ({ name, number }) => ({
-        url: `contacts/`,
-        method: 'POST',
-        body: { name, number },
-      }),
-      invalidatesTags: ['Contact'],
-    }),
-    deleteContact: builder.mutation({
-      query: id => ({
-        url: `contacts/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Contact'],
-    }),
-  }),
+axios.defaults.baseURL = 'https://65131d468e505cebc2e99914.mockapi.io';
+
+export const fetchContacts = createAsyncThunk(
+  'contacts/fetchContacts',
+  async () => {
+    const response = await axios.get('/contacts');
+    return response.data;
+  }
+);
+
+export const addContact = createAsyncThunk(
+  'contacts/addContact',
+  async ({ name, number }) => {
+    const response = await axios.post('/contacts', { name, number });
+    return response.data;
+  }
+);
+
+export const deleteContact = createAsyncThunk(
+  'contacts/deleteContact',
+  async id => {
+    await axios.delete(`/contacts/${id}`);
+    return id;
+  }
+);
+
+const contactsSlice = createSlice({
+  name: 'contacts',
+  initialState: { data: [], loading: false },
+  reducers: {},
+  extraReducers: builder => {
+    builder
+      .addCase(fetchContacts.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.loading = false;
+      })
+      .addCase(addContact.pending, state => {
+        state.loading = true;
+      })
+      .addCase(addContact.fulfilled, (state, action) => {
+        state.data = [...state.data, action.payload];
+        state.loading = false;
+      })
+      .addCase(addContact.rejected, state => {
+        state.loading = false;
+      })
+      .addCase(deleteContact.pending, state => {
+        state.loading = true;
+      })
+      .addCase(deleteContact.fulfilled, (state, action) => {
+        state.data = state.data.filter(
+          contact => contact.id !== action.payload
+        );
+        state.loading = false;
+      })
+      .addCase(deleteContact.rejected, state => {
+        state.loading = false;
+      });
+  },
 });
 
-export const {
-  useGetContactsQuery,
-  useAddContactMutation,
-  useDeleteContactMutation,
-} = contactsApi;
-
-// fetchContacts - получение массива контактов (метод GET) запросом. Базовый тип экшена "contacts/fetchAll".
-// addContact - добавление контакта (метод POST). Базовый тип экшена "contacts/addContact".
-// deleteContact - удаление контакта (метод DELETE). Базовый тип экшена "contacts/deleteContact".
+export const contactsReducer = contactsSlice.reducer;

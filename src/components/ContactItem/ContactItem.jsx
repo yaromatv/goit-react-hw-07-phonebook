@@ -1,8 +1,17 @@
-import { useDeleteContactMutation } from 'redux/contactsSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteContact } from 'redux/contactsSlice';
 
 const ContactItem = ({ id, name, number }) => {
-  const [deleteContact, { isLoading: deleteIsLoading }] =
-    useDeleteContactMutation();
+  const dispatch = useDispatch();
+  const isDeleteContactLoading = useSelector(state => state.contacts.loading);
+
+  const handleDelete = async () => {
+    try {
+      await dispatch(deleteContact(id));
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+    }
+  };
 
   return (
     <li key={id}>
@@ -10,9 +19,9 @@ const ContactItem = ({ id, name, number }) => {
         {name}: {number}
       </span>
       <button
-        disabled={deleteIsLoading}
+        disabled={isDeleteContactLoading}
         type="button"
-        onClick={() => deleteContact(id)}
+        onClick={handleDelete}
       >
         Delete
       </button>
